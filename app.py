@@ -5,8 +5,8 @@ import os
 import base64
 from song_list import emotion_to_songs
 app = Flask(__name__)
-
-
+os.getenv("AWS_SECRET_ACCESS_KEY")
+print(os.getenv("AWS_SECRET_ACCESS_KEY"))
 # Directory to save captured faces
 UPLOAD_FOLDER = 'captured_faces'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -14,11 +14,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # Configure AWS Rekognition
 rekognition_client = boto3.client(
     'rekognition',
-    region_name='us-west-2',  # e.g., 'us-east-1'
-    aws_access_key_id="AKIAR24PSXYL3PLCUZTR",
-    aws_secret_access_key="2FJBiAKlpeGGL0vZVRzF1LiMDav007oj+brD6L3/"
+    # region_name='us-west-2',  # e.g., 'us-east-1'
+    # aws_access_key_id="AKIAR24PSXYL3PLCUZTR",
+    # aws_secret_access_key="2FJBiAKlpeGGL0vZVRzF1LiMDav007oj+brD6L3/"
 )
-
+bedrock_client = boto3.client(
+    "bedrock-runtime"
+    # region_name='us-west-2',  # e.g., 'us-east-1'
+)
 
 @app.route('/')
 def home():
@@ -62,6 +65,40 @@ def capture():
     return jsonify({"emotions": emotions, "songs": songs})
 
 
+@app.route('/chat', methods=['POST'])
+def chat():
+    print("line 72")
+    data = request.json
+    # user_message = data.get("message", "")
+    emotion = data.get("emotion", "neutral").lower()
+
+    print("line 77")
+    # Prepare chatbot prompt
+    prompt = (
+        f"You are a music recommendation chatbot named Mood Melody. The user feels {emotion}. "
+        f"Generate a friendly response and suggest songs matching the mood with YouTube links.\n\n"
+        # f"User: {user_message}\nBot:"
+    )
+    print("line 84")
+    try:
+        # Call Bedrock to generate chatbot response
+        response = bedrock_client.invoke_model(
+            modelId="amazon.titan-text-express-v1",
+            contentType="application/json",
+            # body={"inputText": prompt}
+            body=f"{{\"inputText\": \"{prompt}\"}}"
+        )
+        print("received response")
+        bot_reply = response['body'].read().decode('utf-8')
+
+    except Exception as e:
+        bot_reply = f"Sorry, I couldn't process your request. Error: {str(e)}"
+
+    # Fetch songs based on detected emotion
+    # songs = emotion_to_songs.get(emotion, [{"title": "No suggestions available", "url": "#"}])
+    # return jsonify({"bot_reply": bot_reply, "songs": songs})
+    return jsonify({"bot_reply": bot_reply, "code": "No suggestions available"})
 
 if __name__ == '__main__':
+    # chat()
     app.run(debug=True)

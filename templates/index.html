@@ -6,7 +6,6 @@
     <title>Face Emotion Detection</title>
     <style>
         /* Global Styling */
-        /* Global Styling */
         :root {
             --bg-color: #121212;
             --text-color: #ffffff;
@@ -142,6 +141,7 @@
             padding: 15px;
             background-color: var(--hover-color);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            display: none;
         }
 
         /* Links in Song Suggestions */
@@ -200,6 +200,91 @@
                 opacity: 1;
             }
         }
+        #right-section {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            border-left: 2px solid #333;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #2c2c2c;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #191919;
+        }
+
+        #bot-reply {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #191919;
+        }
+
+        #chat-input-container {
+            display: flex;
+            padding: 10px;
+            background: #1a1a1a;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 14px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+
+        #send-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .loading {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -214,23 +299,34 @@
             <p>Waiting for emotion to be detected...</p>
         </div>
         <div class="button-container">
-            <button id="retake-button" style="display: none;">Retake Emotion</button>
+            <button id="retake-button">Retake Emotion</button>
         </div>
     </div>
 
     <!-- Right Section -->
     <div id="right-section">
-        <h2>Song Suggestions</h2>
+{#        <h2>Song Suggestions</h2>#}
         <div id="song-suggestions">
             <p>No songs to suggest yet.</p>
         </div>
 
         <!-- Additional Section -->
-        <div id="additional-section">
-            <h1>I can see</h1>
-            <input type="text" placeholder="Enter text here">
+        <h2>Mood Melody</h2>
+        <div id="chat-container">
+            <div id="chat-messages">
+                <p><strong>Bot:</strong> Mood Melody is analyzing your emotion...</p>
+            </div>
+            <div id="bot-reply">
+                <h1>Your Song Suggestions</h1>
+                <div id="loading" class="loading"></div>
+            </div>
+            <!-- <div id="chat-input-container">
+                <textarea id="chat-input" placeholder="Type your message..."></textarea>
+                <button id="send-button">Send</button>
+            </div> -->
         </div>
     </div>
+
 </div>
 
 
@@ -240,6 +336,9 @@
     const result = document.getElementById('result');
     const songSuggestions = document.getElementById('song-suggestions');
     const retakeButton = document.getElementById('retake-button');
+    const loading = document.getElementById('loading');
+    let dominantEmotion = "";
+   // let botEmotion = "";
     let isProcessing = false;
     let emotionCaptured = false; // To track if an emotion is captured
     const THRESHOLD = 60; // Confidence threshold to stop
@@ -250,6 +349,56 @@
             video.srcObject = stream;
         })
         .catch((error) => console.error("Camera error:", error));
+
+    // call bedrock and get response
+    async function bedrock_function(dominantEmotion) {
+        // Fetch bot response
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ emotion: dominantEmotion.Type })
+        });
+        const data = await response.json();
+        console.log(data);
+        let botData
+        loading.style.display = 'block';
+        if(data.code === "No suggestions available") {
+            botData = {
+                bot_reply: 'No suggestions available',
+                songs: []
+            };
+        }
+        else {
+            botData = {
+            bot_reply: 'bot reply',
+            songs: [
+                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song1' },
+                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song2' }
+            ]
+        };
+        }
+        // chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+        // chatInput.value = "";
+        // Add bot reply to chat
+        // chatMessages.innerHTML += `<p><strong>Bot:</strong> ${data.bot_reply}</p>`;
+        // Show loading symbol
+
+        // Simulate bot response
+        
+
+        // Hide loading symbol and display bot reply
+            loading.style.display = 'none';
+            const botReply = document.getElementById("bot-reply");
+            botReply.innerHTML += `<p><strong>Bot:</strong> ${botData.bot_reply}</p>`;
+
+            // Add song suggestions
+            botData.songs.forEach(song => {
+                botReply.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
+            });
+
+            // Scroll to the bottom
+            botReply.scrollTop = botReply.scrollHeight;
+    }
 
     // Automatically capture frame if face is detected
     async function detectFaceAndCapture() {
@@ -274,13 +423,14 @@
             .then((data) => {
                 // Update emotion results
                 if (data.emotions && data.emotions.length > 0) {
-                    const dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
+                    dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
 
                     if (dominantEmotion) {
                         // Stop further processing and display result
                         emotionCaptured = true;
                         result.innerHTML = `<h2>Emotion Detected</h2>
                                         <p>${dominantEmotion.Type}: ${dominantEmotion.Confidence.toFixed(2)}%</p>`;
+                        bedrock_function(dominantEmotion);
 
                         // Update song suggestions
                         if (data.songs && data.songs.length > 0) {
@@ -293,6 +443,7 @@
 
                         // Show Retake Button
                         retakeButton.style.display = "block";
+                        // chatEmotionMessage(dominantEmotion.Type)
                     } 
                     // else {
                     //     result.innerHTML = `<h2>Results</h2><ul>${data.emotions
@@ -329,7 +480,6 @@
     video.addEventListener('playing', () => {
         detectFaceAndCapture();
     });
-
 </script>
 </body>
 </html>
