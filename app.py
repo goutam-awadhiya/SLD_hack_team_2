@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, json
 import cv2
 import boto3
 import os
@@ -71,6 +71,7 @@ def chat():
     data = request.json
     # user_message = data.get("message", "")
     emotion = data.get("emotion", "neutral").lower()
+    print(emotion)
 
     print("line 77")
     # Prepare chatbot prompt
@@ -86,18 +87,25 @@ def chat():
             modelId="amazon.titan-text-express-v1",
             contentType="application/json",
             # body={"inputText": prompt}
-            body=f"{{\"inputText\": \"{prompt}\"}}"
+            # body=f"{{\"inputText\": \"{prompt}\"}}"
+            body=json.dumps({"inputText": prompt})
         )
         print("received response")
         bot_reply = response['body'].read().decode('utf-8')
+#         bot_reply_parsed = json.loads(response["bot_reply"])
+# # Update the response dictionary
+#         response["bot_reply"] = bot_reply_parsed
+#         # Output the formatted dictionary
+#         print(json.dumps(response, indent=4))
 
     except Exception as e:
         bot_reply = f"Sorry, I couldn't process your request. Error: {str(e)}"
 
+    print(bot_reply)
     # Fetch songs based on detected emotion
     # songs = emotion_to_songs.get(emotion, [{"title": "No suggestions available", "url": "#"}])
     # return jsonify({"bot_reply": bot_reply, "songs": songs})
-    return jsonify({"bot_reply": bot_reply, "code": "No suggestions available"})
+    return jsonify({"bot_reply": bot_reply})
 
 if __name__ == '__main__':
     # chat()
