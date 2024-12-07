@@ -142,6 +142,7 @@
             padding: 15px;
             background-color: var(--hover-color);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            display: none;
         }
 
         /* Links in Song Suggestions */
@@ -200,6 +201,59 @@
                 opacity: 1;
             }
         }
+        #right-section {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            border-left: 2px solid #333;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #2c2c2c;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #191919;
+        }
+
+        #chat-input-container {
+            display: flex;
+            padding: 10px;
+            background: #1a1a1a;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 14px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+
+        #send-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -214,23 +268,30 @@
             <p>Waiting for emotion to be detected...</p>
         </div>
         <div class="button-container">
-            <button id="retake-button" style="display: none;">Retake Emotion</button>
+            <button id="retake-button">Retake Emotion</button>
         </div>
     </div>
 
     <!-- Right Section -->
     <div id="right-section">
-        <h2>Song Suggestions</h2>
+{#        <h2>Song Suggestions</h2>#}
         <div id="song-suggestions">
             <p>No songs to suggest yet.</p>
         </div>
 
         <!-- Additional Section -->
-        <div id="additional-section">
-            <h1>I can see</h1>
-            <input type="text" placeholder="Enter text here">
+        <h2>Mood Melody</h2>
+        <div id="chat-container">
+            <div id="chat-messages">
+                <p><strong>Bot:</strong> Mood Melody is analyzing your emotion...</p>
+            </div>
+            <div id="chat-input-container">
+                <textarea id="chat-input" placeholder="Type your message..."></textarea>
+                <button id="send-button">Send</button>
+            </div>
         </div>
     </div>
+
 </div>
 
 
@@ -240,6 +301,8 @@
     const result = document.getElementById('result');
     const songSuggestions = document.getElementById('song-suggestions');
     const retakeButton = document.getElementById('retake-button');
+    let dominantEmotion = "";
+   // let botEmotion = "";
     let isProcessing = false;
     let emotionCaptured = false; // To track if an emotion is captured
     const THRESHOLD = 60; // Confidence threshold to stop
@@ -251,6 +314,81 @@
         })
         .catch((error) => console.error("Camera error:", error));
 
+    function chatEmotionMessage(detectedEmotion) {
+        console.log(detectedEmotion)
+        document.addEventListener("DOMContentLoaded", () => {
+            const chatMessages = document.getElementById("chat-messages");
+            const chatInput = document.getElementById("chat-input");
+            const sendButton = document.getElementById("send-button");
+
+            {#let detectedEmotion = "neutral"; // Default emotion#}
+
+            // Simulated emotion detection update
+            setTimeout(() => {
+                // console.log(botEmotion)
+                // detectedEmotion = botEmotion.Type; // Replace with actual detected emotion
+
+                chatMessages.innerHTML += `<p><strong>Bot:</strong> You look ${detectedEmotion}. Here are some songs for you:</p>`;
+                console.log(chatMessages.innerHTML)
+            }, 3000);
+
+            async function sendMessage() {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+
+
+                // Fetch bot response
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userMessage, emotion: detectedEmotion })
+                });
+                const data = await response.json();
+                chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+                chatInput.value = "";
+                // Add bot reply to chat
+                chatMessages.innerHTML += `<p><strong>Bot:</strong> ${data.bot_reply}</p>`;
+
+                // Add song suggestions
+                data.songs.forEach(song => {
+                    chatMessages.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
+                });
+
+                // Scroll to the bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            sendButton.addEventListener("click", sendMessage);
+            chatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        });
+
+    }
+    async function bedrock_function(dominantEmotion) {
+        // Fetch bot response
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ emotion: dominantEmotion.Type })
+        });
+        const data = await response.json();
+        chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+        chatInput.value = "";
+        // Add bot reply to chat
+        chatMessages.innerHTML += `<p><strong>Bot:</strong> ${data.bot_reply}</p>`;
+
+        // Add song suggestions
+        data.songs.forEach(song => {
+            chatMessages.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
+        });
+
+        // Scroll to the bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
     // Automatically capture frame if face is detected
     async function detectFaceAndCapture() {
         if (isProcessing || emotionCaptured) return;
@@ -274,7 +412,8 @@
             .then((data) => {
                 // Update emotion results
                 if (data.emotions && data.emotions.length > 0) {
-                    const dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
+                     dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
+                   // botEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
 
                     if (dominantEmotion) {
                         // Stop further processing and display result
@@ -293,6 +432,7 @@
 
                         // Show Retake Button
                         retakeButton.style.display = "block";
+                        chatEmotionMessage(dominantEmotion.Type)
                     } 
                     // else {
                     //     result.innerHTML = `<h2>Results</h2><ul>${data.emotions
@@ -329,6 +469,7 @@
     video.addEventListener('playing', () => {
         detectFaceAndCapture();
     });
+
 
 </script>
 </body>
