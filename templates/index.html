@@ -362,7 +362,7 @@
         console.log(data);
         let botData
         loading.style.display = 'block';
-        if(data.code === "No suggestions available") {
+        if(data?.code === "No suggestions available") {
             botData = {
                 bot_reply: 'No suggestions available',
                 songs: []
@@ -370,12 +370,15 @@
         }
         else {
             botData = {
-            bot_reply: 'bot reply',
-            songs: [
-                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song1' },
-                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song2' }
-            ]
+            // bot_reply: data.bot_reply,
+            bot_reply: JSON.parse(data.bot_reply),
+            // songs: [
+            //     { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song1' },
+            //     { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song2' }
+            // ]
         };
+        console.log('botData', botData.bot_reply.results[0].outputText);
+        // console.log('botData', botData);
         }
         // chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
         // chatInput.value = "";
@@ -389,12 +392,12 @@
         // Hide loading symbol and display bot reply
             loading.style.display = 'none';
             const botReply = document.getElementById("bot-reply");
-            botReply.innerHTML += `<p><strong>Bot:</strong> ${botData.bot_reply}</p>`;
+            botReply.innerHTML += `<p><strong>Bot:</strong> ${botData.bot_reply.results[0].outputText}</p>`;
 
             // Add song suggestions
-            botData.songs.forEach(song => {
-                botReply.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
-            });
+            // botData.songs.forEach(song => {
+            //     botReply.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
+            // });
 
             // Scroll to the bottom
             botReply.scrollTop = botReply.scrollHeight;
