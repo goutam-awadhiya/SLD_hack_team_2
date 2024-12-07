@@ -1,4 +1,4 @@
-motion_to_songs = {
+emotion_to_songs = {
     "HAPPY": [
         {"title": "Happy - Pharrell Williams", "url": "https://www.youtube.com/watch?v=ZbZSe6N_BXs"},
         {"title": "Can't Stop The Feeling - Justin Timberlake", "url": "https://www.youtube.com/watch?v=ru0K8uYEZWw"},
@@ -30,24 +30,24 @@ motion_to_songs = {
     "SURPRISED": [
         {"title": "Shallow - Lady Gaga, Bradley Cooper", "url": "https://www.youtube.com/watch?v=bo_efYhYU2A"},
         {"title": "Shake It Off - Taylor Swift", "url": "https://www.youtube.com/watch?v=nfWlot6h_JM"},
-        {"title": “Rolling in the Deep - Adele”, “url”: “https://www.youtube.com/watch?v=rYEDA3JcQqw”},
+        {"title": "Rolling in the Deep - Adele", "url": "https://www.youtube.com/watch?v=rYEDA3JcQqw"},
         {"title":"What Makes You Beautiful - One Direction","url":"https://www.youtube.com/watch?v=QJO3ROT-A4E"},
         {"title":"Somebody That I Used To Know - Gotye","url":"https://www.youtube.com/watch?v=8UVNT4wvIGY"}
     ],
     # Additional moods
-    “EXCITED”: [
-        {“title”: “Can’t Stop - Red Hot Chili Peppers”, “url”: “https://www.youtube.com/watch?v=BfOdWSiykag”},
+    "EXCITED": [
+        {"title": "Can’t Stop - Red Hot Chili Peppers", "url": "https://www.youtube.com/watch?v=BfOdWSiykag"},
     ],
-    “MELANCHOLIC”: [
-        {“title”: “The Night We Met - Lord Huron”, “url”: “https://www.youtube.com/watch?v=KtlgYxa6BMU”},
+    "MELANCHOLIC": [
+        {"title": "The Night We Met - Lord Huron", "url": "https://www.youtube.com/watch?v=KtlgYxa6BMU"},
     ],
-    “DISAPPOINTED”: [
-        {“title”: “Back to December - Taylor Swift”, “url”: “https://www.youtube.com/watch?v=QUwxK9GkVbA”},
+    "DISAPPOINTED": [
+        {"title": "Back to December - Taylor Swift", "url": "https://www.youtube.com/watch?v=QUwxK9GkVbA"},
     ],
-    “ACTIVE”: [
-        {“title”: “Uptown Funk - Mark Ronson ft. Bruno Mars”, “url”: “https://www.youtube.com/watch?v=OPf0Y6SoxE0”},
+    "ACTIVE": [
+        {"title": "Uptown Funk - Mark Ronson ft. Bruno Mars", "url": "https://www.youtube.com/watch?v=OPf0Y6SoxE0"},
     ],
-    “INSPIRED”: [
-        {“title”: “Rise Up - Andra Day”, “url”: “https://www.youtube.com/watch?v=u9Dg-g7t2l4”},
+    "INSPIRED": [
+        {"title": "Rise Up - Andra Day", "url": "https://www.youtube.com/watch?v=u9Dg-g7t2l4"},
     ],
 }
