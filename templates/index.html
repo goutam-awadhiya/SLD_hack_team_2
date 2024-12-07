@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Emotion Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        #container {
+            display: flex;
+            width: 100%;
+        }
+
+        #left-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        #right-section {
+            flex: 1;
+            border: 2px dashed #ccc;
+            background-color: #e6e6e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        video {
+            width: 100%;
+            max-width: 600px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+        #result {
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1, h2 {
+            margin: 0;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <!-- Left Section -->
+    <div id="left-section">
+        <h1>Face Emotion Detection</h1>
+        <video id="video" autoplay></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <div id="result">
+            <h2>Results</h2>
+            <p>Waiting for a face to be detected...</p>
+        </div>
+    </div>
+
+    <!-- Right Section (Empty with Border) -->
+    <div id="right-section">
+        <h2>Song Suggestions</h2>
+        <div id="song-suggestions">
+            <p>No songs to suggest yet.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const result = document.getElementById('result');
+    let isProcessing = false;
+
+    // Start video stream
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+            video.srcObject = stream;
+        })
+        .catch((error) => console.error("Camera error:", error));
+
+    // Automatically capture frame if face is detected
+    async function detectFaceAndCapture() {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Draw the current video frame on the canvas
+        context.drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/jpeg');
+
+        // Send frame to server only if not already processing
+        if (!isProcessing) {
+            isProcessing = true;
+            fetch('/capture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageData })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    // Update emotion results
+                    if (data.emotions && data.emotions.length > 0) {
+                        result.innerHTML = `<h2>Results</h2><ul>${data.emotions
+                            .map((e) => `<li>${e.Type}: ${e.Confidence.toFixed(2)}%</li>`)
+                            .join('')}</ul>`;
+                    } else {
+                        result.innerHTML = `<h2>Results</h2><p>Face detected but no emotions identified.</p>`;
+                    }
+
+                    // Update song suggestions
+                    const songSuggestions = document.getElementById('song-suggestions');
+                    if (data.songs && data.songs.length > 0) {
+                        songSuggestions.innerHTML = `<ul>${data.songs
+                            .map((song) => `<li><a href="${song.url}" target="_blank">${song.title}</a></li>`)
+                            .join('')}</ul>`;
+                    } else {
+                        songSuggestions.innerHTML = `<p>No songs to suggest yet.</p>`;
+                    }
+                })
+                .catch((error) => console.error("Error:", error))
+                .finally(() => {
+                    isProcessing = false;
+                });
+        }
+
+        // Keep looping
+        requestAnimationFrame(detectFaceAndCapture);
+    }
+
+    // Start detection loop
+    video.addEventListener('playing', () => {
+        detectFaceAndCapture();
+    });
+</script>
+</body>
+</html>
