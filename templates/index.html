@@ -159,10 +159,14 @@
 
     // Handle Retake Button Click
     retakeButton.addEventListener('click', () => {
-        emotionCaptured = false;
-        retakeButton.style.display = "none";
-        result.innerHTML = `<h2>Results</h2><p>Waiting for a face to be detected...</p>`;
-        songSuggestions.innerHTML = `<p>No songs to suggest yet.</p>`;
+        // Reset flags and UI
+        emotionCaptured = false; // Allow emotion detection again
+        isProcessing = false; // Enable new frames to be processed
+        retakeButton.style.display = "none"; // Hide retake button
+        result.innerHTML = `<h2>Results</h2><p>Waiting for a face to be detected...</p>`; // Reset results
+        songSuggestions.innerHTML = `<p>No songs to suggest yet.</p>`; // Clear song suggestions
+
+        // Restart detection loop
         detectFaceAndCapture();
     });
 
