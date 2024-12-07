@@ -68,6 +68,7 @@
             <h2>Results</h2>
             <p>Waiting for a face to be detected...</p>
         </div>
+        <button id="retake-button" style="display: none;">Retake Emotion</button>
     </div>
 
     <!-- Right Section (Empty with Border) -->
@@ -83,7 +84,11 @@
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const result = document.getElementById('result');
+    const songSuggestions = document.getElementById('song-suggestions');
+    const retakeButton = document.getElementById('retake-button');
     let isProcessing = false;
+    let emotionCaptured = false; // To track if an emotion is captured
+    const THRESHOLD = 60; // Confidence threshold to stop
 
     // Start video stream
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -94,6 +99,8 @@
 
     // Automatically capture frame if face is detected
     async function detectFaceAndCapture() {
+        if (isProcessing || emotionCaptured) return;
+
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -102,49 +109,68 @@
         context.drawImage(video, 0, 0);
         const imageData = canvas.toDataURL('image/jpeg');
 
-        // Send frame to server only if not already processing
-        if (!isProcessing) {
-            isProcessing = true;
-            fetch('/capture', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: imageData })
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    // Update emotion results
-                    if (data.emotions && data.emotions.length > 0) {
+        // Send frame to server
+        isProcessing = true;
+        fetch('/capture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageData })
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                // Update emotion results
+                if (data.emotions && data.emotions.length > 0) {
+                    const dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
+
+                    if (dominantEmotion) {
+                        // Stop further processing and display result
+                        emotionCaptured = true;
+                        result.innerHTML = `<h2>Emotion Detected</h2>
+                                        <p>${dominantEmotion.Type}: ${dominantEmotion.Confidence.toFixed(2)}%</p>`;
+
+                        // Update song suggestions
+                        if (data.songs && data.songs.length > 0) {
+                            songSuggestions.innerHTML = `<ul>${data.songs
+                                .map(song => `<li><a href="${song.url}" target="_blank">${song.title}</a></li>`)
+                                .join('')}</ul>`;
+                        } else {
+                            songSuggestions.innerHTML = `<p>No songs to suggest.</p>`;
+                        }
+
+                        // Show Retake Button
+                        retakeButton.style.display = "block";
+                    } else {
                         result.innerHTML = `<h2>Results</h2><ul>${data.emotions
-                            .map((e) => `<li>${e.Type}: ${e.Confidence.toFixed(2)}%</li>`)
+                            .map(e => `<li>${e.Type}: ${e.Confidence.toFixed(2)}%</li>`)
                             .join('')}</ul>`;
-                    } else {
-                        result.innerHTML = `<h2>Results</h2><p>Face detected but no emotions identified.</p>`;
                     }
-
-                    // Update song suggestions
-                    const songSuggestions = document.getElementById('song-suggestions');
-                    if (data.songs && data.songs.length > 0) {
-                        songSuggestions.innerHTML = `<ul>${data.songs
-                            .map((song) => `<li><a href="${song.url}" target="_blank">${song.title}</a></li>`)
-                            .join('')}</ul>`;
-                    } else {
-                        songSuggestions.innerHTML = `<p>No songs to suggest yet.</p>`;
-                    }
-                })
-                .catch((error) => console.error("Error:", error))
-                .finally(() => {
+                } else {
+                    result.innerHTML = `<h2>Results</h2><p>Face detected but no emotions identified.</p>`;
+                }
+            })
+            .catch((error) => console.error("Error:", error))
+            .finally(() => {
+                if (!emotionCaptured) {
                     isProcessing = false;
-                });
-        }
-
-        // Keep looping
-        requestAnimationFrame(detectFaceAndCapture);
+                    requestAnimationFrame(detectFaceAndCapture);
+                }
+            });
     }
+
+    // Handle Retake Button Click
+    retakeButton.addEventListener('click', () => {
+        emotionCaptured = false;
+        retakeButton.style.display = "none";
+        result.innerHTML = `<h2>Results</h2><p>Waiting for a face to be detected...</p>`;
+        songSuggestions.innerHTML = `<p>No songs to suggest yet.</p>`;
+        detectFaceAndCapture();
+    });
 
     // Start detection loop
     video.addEventListener('playing', () => {
         detectFaceAndCapture();
     });
+
 </script>
 </body>
 </html>
