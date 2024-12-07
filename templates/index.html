@@ -5,73 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Emotion Detection</title>
     <style>
+        /* Global Styling */
+        /* Global Styling */
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --border-color: #333333;
+            --hover-color: #1f1f1f;
+            --animation-duration: 0.3s;
+        }
+
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
         }
 
-        #container {
+        /* Main Container */
+        /* Main Container */
+        .container {
             display: flex;
-            width: 100%;
+            width: 95%; /* Increase width to occupy more screen space */
+            max-width: 1400px; /* Allow more space for large screens */
+            height: 90%; /* Increase height to almost full screen */
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+            animation: fadeIn var(--animation-duration) ease-in-out;
         }
 
-        #left-section {
-            flex: 2;
+
+        /* Shared Section Styles */
+        .container > div {
+            flex: 1;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: flex-start;
-            background-color: #f0f0f0;
-            padding: 20px;
-        }
-
-        #right-section {
-            flex: 1;
-            border: 2px dashed #ccc;
-            background-color: #e6e6e6;
-            display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
+            background: linear-gradient(145deg, #2c2c2c, #191919);
+            border-right: 2px solid var(--border-color);
+            animation: slideIn var(--animation-duration) ease-in-out;
         }
 
-        video {
+        /* Remove border from the last section */
+        .container > div:last-child {
+            border-right: none;
+        }
+
+        /* Left Section */
+        #left-section h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        #video {
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
             width: 100%;
-            max-width: 600px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
+            max-width: 480px;
+            height: auto;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        canvas {
+            display: none;
         }
 
         #result {
             margin-top: 20px;
             width: 100%;
             text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: var(--hover-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
 
-        h1, h2 {
-            margin: 0;
-            padding: 10px 0;
+        /* Center Retake Emotion Button */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        #retake-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color var(--animation-duration);
+        }
+
+        #retake-button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Right Section */
+        #right-section h2 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+
+        #song-suggestions {
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: var(--hover-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Links in Song Suggestions */
+        #song-suggestions a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: color var(--animation-duration);
+        }
+
+        #song-suggestions a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 <body>
-<div id="container">
+<div class="container">
     <!-- Left Section -->
     <div id="left-section">
-        <h1>Face Emotion Detection</h1>
+        <h2>Emotion Detection</h2>
         <video id="video" autoplay></video>
-        <canvas id="canvas" style="display: none;"></canvas>
+        <canvas id="canvas"></canvas>
         <div id="result">
-            <h2>Results</h2>
-            <p>Waiting for a face to be detected...</p>
+            <h3>Results</h3>
+            <p>Waiting for emotion to be detected...</p>
         </div>
-        <button id="retake-button" style="display: none;">Retake Emotion</button>
+        <div class="button-container">
+            <button id="retake-button" style="display: none;">Retake Emotion</button>
+        </div>
     </div>
 
-    <!-- Right Section (Empty with Border) -->
+    <!-- Right Section -->
     <div id="right-section">
         <h2>Song Suggestions</h2>
         <div id="song-suggestions">
@@ -79,6 +193,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     const video = document.getElementById('video');
