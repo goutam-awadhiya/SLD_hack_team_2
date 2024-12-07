@@ -21,8 +21,13 @@ rekognition_client = boto3.client(
 
 
 @app.route('/')
-def index():
+def home():
+    return render_template('home.html')
+
+@app.route('/discover')
+def discover():
     return render_template('index.html')
+
 
 
 @app.route('/capture', methods=['POST'])
