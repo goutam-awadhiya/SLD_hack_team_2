@@ -6,7 +6,6 @@
     <title>Face Emotion Detection</title>
     <style>
         /* Global Styling */
-        /* Global Styling */
         :root {
             --bg-color: #121212;
             --text-color: #ffffff;
@@ -229,6 +228,13 @@
             background: #191919;
         }
 
+        #bot-reply {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #191919;
+        }
+
         #chat-input-container {
             display: flex;
             padding: 10px;
@@ -253,6 +259,31 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .loading {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
@@ -285,10 +316,14 @@
             <div id="chat-messages">
                 <p><strong>Bot:</strong> Mood Melody is analyzing your emotion...</p>
             </div>
-            <div id="chat-input-container">
+            <div id="bot-reply">
+                <h1>Your Song Suggestions</h1>
+                <div id="loading" class="loading"></div>
+            </div>
+            <!-- <div id="chat-input-container">
                 <textarea id="chat-input" placeholder="Type your message..."></textarea>
                 <button id="send-button">Send</button>
-            </div>
+            </div> -->
         </div>
     </div>
 
@@ -301,6 +336,7 @@
     const result = document.getElementById('result');
     const songSuggestions = document.getElementById('song-suggestions');
     const retakeButton = document.getElementById('retake-button');
+    const loading = document.getElementById('loading');
     let dominantEmotion = "";
    // let botEmotion = "";
     let isProcessing = false;
@@ -314,60 +350,7 @@
         })
         .catch((error) => console.error("Camera error:", error));
 
-    function chatEmotionMessage(detectedEmotion) {
-        console.log(detectedEmotion)
-        document.addEventListener("DOMContentLoaded", () => {
-            const chatMessages = document.getElementById("chat-messages");
-            const chatInput = document.getElementById("chat-input");
-            const sendButton = document.getElementById("send-button");
-
-            {#let detectedEmotion = "neutral"; // Default emotion#}
-
-            // Simulated emotion detection update
-            setTimeout(() => {
-                // console.log(botEmotion)
-                // detectedEmotion = botEmotion.Type; // Replace with actual detected emotion
-
-                chatMessages.innerHTML += `<p><strong>Bot:</strong> You look ${detectedEmotion}. Here are some songs for you:</p>`;
-                console.log(chatMessages.innerHTML)
-            }, 3000);
-
-            async function sendMessage() {
-                const userMessage = chatInput.value.trim();
-                if (!userMessage) return;
-
-
-                // Fetch bot response
-                const response = await fetch("/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: userMessage, emotion: detectedEmotion })
-                });
-                const data = await response.json();
-                chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
-                chatInput.value = "";
-                // Add bot reply to chat
-                chatMessages.innerHTML += `<p><strong>Bot:</strong> ${data.bot_reply}</p>`;
-
-                // Add song suggestions
-                data.songs.forEach(song => {
-                    chatMessages.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
-                });
-
-                // Scroll to the bottom
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            sendButton.addEventListener("click", sendMessage);
-            chatInput.addEventListener("keypress", (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-        });
-
-    }
+    // call bedrock and get response
     async function bedrock_function(dominantEmotion) {
         // Fetch bot response
         const response = await fetch("/chat", {
@@ -376,19 +359,47 @@
             body: JSON.stringify({ emotion: dominantEmotion.Type })
         });
         const data = await response.json();
-        chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
-        chatInput.value = "";
+        console.log(data);
+        let botData
+        loading.style.display = 'block';
+        if(data.code === "No suggestions available") {
+            botData = {
+                bot_reply: 'No suggestions available',
+                songs: []
+            };
+        }
+        else {
+            botData = {
+            bot_reply: 'bot reply',
+            songs: [
+                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song1' },
+                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song2' }
+            ]
+        };
+        }
+        // chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+        // chatInput.value = "";
         // Add bot reply to chat
-        chatMessages.innerHTML += `<p><strong>Bot:</strong> ${data.bot_reply}</p>`;
+        // chatMessages.innerHTML += `<p><strong>Bot:</strong> ${data.bot_reply}</p>`;
+        // Show loading symbol
 
-        // Add song suggestions
-        data.songs.forEach(song => {
-            chatMessages.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
-        });
+        // Simulate bot response
+        
 
-        // Scroll to the bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Hide loading symbol and display bot reply
+            loading.style.display = 'none';
+            const botReply = document.getElementById("bot-reply");
+            botReply.innerHTML += `<p><strong>Bot:</strong> ${botData.bot_reply}</p>`;
+
+            // Add song suggestions
+            botData.songs.forEach(song => {
+                botReply.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
+            });
+
+            // Scroll to the bottom
+            botReply.scrollTop = botReply.scrollHeight;
     }
+
     // Automatically capture frame if face is detected
     async function detectFaceAndCapture() {
         if (isProcessing || emotionCaptured) return;
@@ -412,14 +423,14 @@
             .then((data) => {
                 // Update emotion results
                 if (data.emotions && data.emotions.length > 0) {
-                     dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
-                   // botEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
+                    dominantEmotion = data.emotions.find(e => e.Confidence > THRESHOLD);
 
                     if (dominantEmotion) {
                         // Stop further processing and display result
                         emotionCaptured = true;
                         result.innerHTML = `<h2>Emotion Detected</h2>
                                         <p>${dominantEmotion.Type}: ${dominantEmotion.Confidence.toFixed(2)}%</p>`;
+                        bedrock_function(dominantEmotion);
 
                         // Update song suggestions
                         if (data.songs && data.songs.length > 0) {
@@ -432,7 +443,7 @@
 
                         // Show Retake Button
                         retakeButton.style.display = "block";
-                        chatEmotionMessage(dominantEmotion.Type)
+                        // chatEmotionMessage(dominantEmotion.Type)
                     } 
                     // else {
                     //     result.innerHTML = `<h2>Results</h2><ul>${data.emotions
@@ -469,8 +480,6 @@
     video.addEventListener('playing', () => {
         detectFaceAndCapture();
     });
-
-
 </script>
 </body>
 </html>
