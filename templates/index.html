@@ -11,7 +11,6 @@
             --bg-color: #121212;
             --text-color: #ffffff;
             --primary-color: #bb86fc;
-            --secondary-color: #03dac6;
             --border-color: #333333;
             --hover-color: #1f1f1f;
             --animation-duration: 0.3s;
@@ -26,6 +25,15 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            background: linear-gradient(270deg, #614288, black);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* Main Container */
@@ -37,7 +45,7 @@
             height: 90%; /* Increase height to almost full screen */
             border: 2px solid var(--border-color);
             border-radius: 10px;
-            overflow: hidden;
+            overflow-x: auto;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
             animation: fadeIn var(--animation-duration) ease-in-out;
@@ -75,7 +83,6 @@
             width: 100%;
             max-width: 480px;
             height: auto;
-            margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
 
@@ -84,7 +91,7 @@
         }
 
         #result {
-            margin-top: 20px;
+            margin-top: 10px;
             width: 100%;
             text-align: center;
             border: 1px solid var(--border-color);
@@ -96,6 +103,7 @@
 
         /* Center Retake Emotion Button */
         .button-container {
+            margin-top: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -115,13 +123,13 @@
         }
 
         #retake-button:hover {
-            background-color: var(--secondary-color);
+            background-color: var(--primary-color);
         }
 
         /* Right Section */
         #right-section h2 {
             font-size: 1.5rem;
-            color: var(--secondary-color);
+            color: var(--primary-color);
             margin-bottom: 20px;
         }
 
@@ -138,13 +146,38 @@
 
         /* Links in Song Suggestions */
         #song-suggestions a {
-            color: var(--secondary-color);
+            color: var(--primary-color);
             text-decoration: none;
             transition: color var(--animation-duration);
         }
 
         #song-suggestions a:hover {
             color: var(--primary-color);
+        }
+
+        #additional-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: end;
+            padding: 20px;
+            animation: fadeIn 2s;
+        }
+
+        #additional-section h1 {
+            margin: 0;
+            padding: 10px 0;
+            color: var(--primary-color);
+        }
+
+        #additional-section input {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--hover-color);
+            color: var(--text-color);
         }
 
         /* Animations */
@@ -190,6 +223,12 @@
         <h2>Song Suggestions</h2>
         <div id="song-suggestions">
             <p>No songs to suggest yet.</p>
+        </div>
+
+        <!-- Additional Section -->
+        <div id="additional-section">
+            <h1>I can see</h1>
+            <input type="text" placeholder="Enter text here">
         </div>
     </div>
 </div>
@@ -254,11 +293,12 @@
 
                         // Show Retake Button
                         retakeButton.style.display = "block";
-                    } else {
-                        result.innerHTML = `<h2>Results</h2><ul>${data.emotions
-                            .map(e => `<li>${e.Type}: ${e.Confidence.toFixed(2)}%</li>`)
-                            .join('')}</ul>`;
-                    }
+                    } 
+                    // else {
+                    //     result.innerHTML = `<h2>Results</h2><ul>${data.emotions
+                    //         .map(e => `<li>${e.Type}: ${e.Confidence.toFixed(2)}%</li>`)
+                    //         .join('')}</ul>`;
+                    // }
                 } else {
                     result.innerHTML = `<h2>Results</h2><p>Face detected but no emotions identified.</p>`;
                 }
