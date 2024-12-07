@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moody Melody - Home</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --border-color: #333333;
+            --hover-color: #1f1f1f;
+            --animation-duration: 0.3s;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(270deg, #614288, black);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            height: 50%;
+            width: 50%;
+            align-items: center;
+            display: grid;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: linear-gradient(145deg, #2c2c2c, #191919);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            animation: fadeIn var(--animation-duration) ease-in-out;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+        }
+
+        .discover-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color var(--animation-duration);
+        }
+
+        .discover-button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Moody Melody</h1>
+        <button id="discover-button" class="discover-button" onclick="window.location='home.html'">Discover</button>
+    </div>
+
+    <script>
+        document.getElementById('discover-button').addEventListener('click', function() {
+            window.location.href = '/discover';
+        });
+    </script>
+</body>
+</html>
