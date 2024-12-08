@@ -11,10 +11,10 @@ print(os.getenv("AWS_SECRET_ACCESS_KEY"))
 # Directory to save captured faces
 UPLOAD_FOLDER = 'captured_faces'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-# os.environ['AWS_DEFAULT_REGION']= <>
-# os.environ['AWS_ACCESS_KEY_ID']= <>
-# os.environ['AWS_SECRET_ACCESS_KEY']= <>
-# os.environ['AWS_SESSION_TOKEN'] = <>
+os.environ['AWS_DEFAULT_REGION']= <>
+os.environ['AWS_ACCESS_KEY_ID']= <>
+os.environ['AWS_SECRET_ACCESS_KEY']= <>
+os.environ['AWS_SESSION_TOKEN'] = <>
 rekognition_client = boto3.client(
     'rekognition',
     # region_name='us-west-2',  # e.g., 'us-east-1'
