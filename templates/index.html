@@ -235,6 +235,31 @@
             background: #191919;
         }
 
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            position: relative;
+        }
+
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-top-color: var(--primary-color);
+            border-bottom: 0;
+            border-left: 0;
+            margin-left: -5px;
+            margin-bottom: -10px;
+        }
+
         #chat-input-container {
             display: flex;
             padding: 10px;
@@ -318,6 +343,7 @@
             </div>
             <div id="bot-reply">
                 <h1>Your Song Suggestions</h1>
+                <div id="bot-response"></div>
                 <div id="loading" class="loading"></div>
             </div>
             <!-- <div id="chat-input-container">
@@ -326,9 +352,7 @@
             </div> -->
         </div>
     </div>
-
 </div>
-
 
 <script>
     const video = document.getElementById('video');
@@ -337,6 +361,7 @@
     const songSuggestions = document.getElementById('song-suggestions');
     const retakeButton = document.getElementById('retake-button');
     const loading = document.getElementById('loading');
+    const botResponse = document.getElementById('bot-response');
     let dominantEmotion = "";
    // let botEmotion = "";
     let isProcessing = false;
@@ -362,7 +387,7 @@
         console.log(data);
         let botData
         loading.style.display = 'block';
-        if(data.code === "No suggestions available") {
+        if(data?.code === "No suggestions available") {
             botData = {
                 bot_reply: 'No suggestions available',
                 songs: []
@@ -370,12 +395,16 @@
         }
         else {
             botData = {
-            bot_reply: 'bot reply',
-            songs: [
-                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song1' },
-                { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song2' }
-            ]
+            // bot_reply: data.bot_reply,
+            bot_reply: data.bot_reply,
+            // songs: [
+            //     { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song1' },
+            //     { url: 'https://www.youtube.com/watch?v=6bH4wYwBb5o', title: 'song2' }
+            // ]
         };
+        console.log('bot data new', botData);
+        console.log('botData', botData.bot_reply[0].text);
+        // console.log('botData', botData);
         }
         // chatMessages.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
         // chatInput.value = "";
@@ -389,15 +418,30 @@
         // Hide loading symbol and display bot reply
             loading.style.display = 'none';
             const botReply = document.getElementById("bot-reply");
-            botReply.innerHTML += `<p><strong>Bot:</strong> ${botData.bot_reply}</p>`;
+            const botResponse = document.getElementById("bot-response");
+
+            function makeLinksClickable(text) {
+                // Regular expression to find URLs
+                const urlPattern = /(https?:\/\/[^\s]+)/g;
+                
+                // Replace URLs with clickable links
+                return text.replace(urlPattern, function(url) {
+                    return `<a href="${url}" target="_blank">${url}</a>`;
+                });
+            }
+
+            let clickableText = makeLinksClickable(botData.bot_reply[0].text);
+
+            botResponse.innerHTML += `<div class="chat-bubble"><strong>Bot:</strong> ${clickableText}</div>`;
 
             // Add song suggestions
-            botData.songs.forEach(song => {
-                botReply.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
-            });
+            // botData.songs.forEach(song => {
+            //     botReply.innerHTML += `<p><a href="${song.url}" target="_blank">${song.title}</a></p>`;
+            // });
 
             // Scroll to the bottom
-            botReply.scrollTop = botReply.scrollHeight;
+            botResponse.scrollTop = botResponse.scrollHeight;
+        // }, 2000); // Simulate a delay for the bot response
     }
 
     // Automatically capture frame if face is detected
@@ -411,7 +455,7 @@
         // Draw the current video frame on the canvas
         context.drawImage(video, 0, 0);
         const imageData = canvas.toDataURL('image/jpeg');
-
+        loading.style.display = 'block';
         // Send frame to server
         isProcessing = true;
         fetch('/capture', {
